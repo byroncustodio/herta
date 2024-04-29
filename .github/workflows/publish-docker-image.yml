@@ -33,11 +33,18 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: "${{ env.REGISTRY }}/byroncustodio/herta${{ github.ref_name != 'main' && '-dev' || '' }}:${{ steps.version.outputs.version }}"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: "${{ env.REGISTRY }}/byroncustodio/herta${{ github.ref_name != 'main' && '-dev' || '' }}:${{ steps.version.outputs.version }}"
+          labels: ${{ steps.meta.outputs.labels }}
           secrets: |
             NUGET_API_KEY=${{ secrets.NUGET_API_KEY }}

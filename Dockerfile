@@ -1,6 +1,4 @@
-﻿LABEL org.opencontainers.image.description="A web app for businesses to track their sales channels"
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
