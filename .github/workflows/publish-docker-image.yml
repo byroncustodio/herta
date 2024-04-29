@@ -38,6 +38,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{ env.REGISTRY }}/herta${{ github.ref_name == 'main' && '' || '-dev' }}:${{ steps.version.outputs.version }}"
+          tags: "${{ env.REGISTRY }}/byroncustodio/herta${{ github.ref_name != 'main' && '-dev' || '' }}:${{ steps.version.outputs.version }}"
           secrets: |
             NUGET_API_KEY=${{ secrets.NUGET_API_KEY }}
