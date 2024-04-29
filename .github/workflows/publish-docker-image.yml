@@ -23,7 +23,7 @@ jobs:
         uses: reecetech/version-increment@2024.4.4
         id: version
         with:
-          scheme: semver
+          scheme: calver
           increment: patch
 
       - name: Log in to the Container registry
@@ -33,18 +33,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/herta${{ github.ref_name == 'main' && '' || '-dev' }}:${{ steps.version.outputs.version }}
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: "${{ env.REGISTRY }}/herta${{ github.ref_name == 'main' && '' || '-dev' }}:${{ steps.version.outputs.version }}"
           secrets: |
             NUGET_API_KEY=${{ secrets.NUGET_API_KEY }}
