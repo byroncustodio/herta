@@ -1,0 +1,45 @@
+﻿@rendermode InteractiveServer
+
+<RadzenHeader Style="position: relative;">
+    <RadzenStack JustifyContent="JustifyContent.SpaceBetween" Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+        <div>
+            <RadzenSidebarToggle Click="@(() => _sidebarExpanded = !_sidebarExpanded)" />
+            @* <RadzenImage Path="content/makers_logo.png" Style="width:12rem;vertical-align:top;" /> *@
+        </div>
+        <RadzenProfileMenu>
+            <Template>
+                <RadzenIcon Icon="account_circle" Style="font-size: 2rem;vertical-align: middle;"></RadzenIcon>
+                @* <RadzenImage Path="content/profile_icon.jpg" Style="width:3rem;" /> *@
+                @* <RadzenGravatar Email="user@example.com"></RadzenGravatar> *@
+            </Template>
+            <ChildContent>
+                <RadzenProfileMenuItem Text="Account" Path="account" Icon="manage_accounts"></RadzenProfileMenuItem>
+                <RadzenProfileMenuItem Text="Logout" Path="logout" Icon="logout"></RadzenProfileMenuItem>
+            </ChildContent>
+        </RadzenProfileMenu>
+    </RadzenStack>
+</RadzenHeader>
+
+<RadzenSidebar Responsive="false" @bind-Expanded="_sidebarExpanded">
+    <RadzenPanelMenu ShowArrow="false">
+        <RadzenPanelMenuItem Text="Dashboard" Path="/" Icon="dashboard" />
+        <RadzenPanelMenuItem Text="Sales" Path="sales" Icon="card_giftcard" />
+        <RadzenPanelMenuItem Text="Products" Path="products" Icon="loyalty" />
+        <RadzenPanelMenuItem Text="Billing" Path="billing" Icon="account_balance_wallet" />
+        <RadzenPanelMenuItem Text="Onboarding" Path="https://docs.shopmakers.ca/" Target="_blank" Icon="book" />
+    </RadzenPanelMenu>
+</RadzenSidebar>
+
+<RadzenMediaQuery Query="(max-width: 768px)" Change="@OnMediaQueryChanged" />
+
+@code {
+    bool _sidebarExpanded = true;
+
+    void OnMediaQueryChanged(bool matches)
+    {
+        if (matches)
+        {
+            _sidebarExpanded = false;
+        }
+    }
+}

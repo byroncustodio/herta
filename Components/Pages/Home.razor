@@ -1,0 +1,19 @@
+﻿@page "/"
+@page "/dashboard"
+@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize]
+
+<PageTitle>Herta</PageTitle>
+
+<h1>Dashboard</h1>
+
+Welcome to your new app.
+
+<AuthorizeView Roles="Vendor">
+    <p>@context.User.Identity?.Name</p>
+    <p>@context.User.Identity?.IsAuthenticated</p>
+    <p>@context.User.IsInRole("Vendor")</p>
+</AuthorizeView>

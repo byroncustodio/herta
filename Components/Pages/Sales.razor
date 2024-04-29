@@ -1,0 +1,438 @@
+﻿@page "/sales"
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authorization
+@using MvposSDK
+@using System.Net
+@using MvposSDK.Models
+@using Radzen.Blazor.Rendering
+
+@inject AuthManager AuthManager
+@inject Mvpos Mvpos
+@inject NavigationManager NavigationManager
+@inject ILogger<Login> Logger
+
+@attribute [Authorize]
+
+<PageScript Src="./Components/Pages/Sales.razor.js" />
+
+<h1>Sales</h1>
+
+<div>
+    <RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Start" JustifyContent="JustifyContent.End" Gap="1rem">
+            <RadzenFormField Variant="Variant.Outlined" class="filter-search-ff">
+                <Start>
+                    <RadzenIcon Icon="search"/>
+                </Start>
+                <ChildContent>
+                    <RadzenTextBox @ref="_searchTextBox" @oninput="@(args => OnSearchInput(args.Value?.ToString()))" Disabled="_isLoading"/>
+                </ChildContent>
+            </RadzenFormField>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0" Style="cursor: pointer;">
+                <RadzenFormField Variant="Variant.Outlined" class="filter-date-ff" name="DateType">
+                    <Start>
+                        <RadzenIcon Icon="calendar_today"/>
+                    </Start>
+                    <ChildContent>
+                        <RadzenDropDown @bind-Value="@_dateTypeInput"
+                                        TextProperty="Text"
+                                        ValueProperty="Value"
+                                        Data="@(Enum.GetValues(typeof(DateType)).Cast<DateType>().Select(e => new { Text = $"{e.GetDisplayDescription()}", Value = e }))"
+                                        Change="@(value => OnDateTypeChanged(Enum.Parse<DateType>(value.ToString() ?? throw new InvalidCastException())))"
+                                        Disabled="_isLoading"
+                                        Name="DateTypeDropDown"
+                                        Style="width: 100%;max-width: 196px;padding-left: 50px;font-weight: 500;"/>
+                    </ChildContent>
+                </RadzenFormField>
+
+                <RadzenFormField Variant="Variant.Outlined" class="filter-date-ff" name="StartDate">
+                    <RadzenDatePicker @bind-Value="@_startDateInput"
+                                      Change="@(value => OnStartDateChanged(value))"
+                                      Disabled="_isLoading"
+                                      DateFormat="dd MMM yyyy"
+                                      Name="StartDatePicker"
+                                      Style="max-width: 128px"/>
+                </RadzenFormField>
+
+                <RadzenFormField Variant="Variant.Outlined" class="filter-date-ff" name="EndDate">
+                    <span id="RangeLabel">to</span>
+                    <RadzenDatePicker @bind-Value="@_endDateInput"
+                                      Change="@(value => OnEndDateChanged(value))"
+                                      Min="@_endDateInputMin"
+                                      DateFormat="dd MMM yyyy"
+                                      Name="EndDatePicker"
+                                      Disabled="@_isLoading"
+                                      Style="max-width: 128px"/>
+                </RadzenFormField>
+            </RadzenStack>
+            
+            <RadzenFormField Variant="Variant.Outlined" class="filter-location-ff" Style="cursor: pointer;">
+                <Start>
+                    <RadzenIcon Icon="storefront"/>
+                </Start>
+                <ChildContent>
+                    <RadzenDropDown @bind-Value="@_locationsInput"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    Data="@(_locations.Select(x => new { Text = $"{x.Name?.Split("-").Last().Trim()}", Value = x.Id }))"
+                                    Change="@(value => OnLocationChanged((IEnumerable<int>?)value))"
+                                    Disabled="_isLoading"
+                                    Multiple="true"
+                                    AllowClear="true"
+                                    MaxSelectedLabels="2"
+                                    SelectAllText="All"
+                                    SelectedItemsText="selected"
+                                    Placeholder="Select locations"
+                                    Name="LocationListDropDown"
+                                    Style="width: 100%;min-width: 256px;max-width: 400px;padding-left: 50px;font-weight: 500;"/>
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenStack>
+    </RadzenCard>
+    
+    <RadzenDataGrid
+        @ref="_grid"
+        AllowColumnResize="false"
+        AllowColumnPicking="false"
+        AllowAlternatingRows="false"
+        AllowSorting="true"
+        AllowGrouping="false"
+        SelectionMode="DataGridSelectionMode.Single"
+        HideGroupedColumn="true"
+        ShowGroupExpandColumn="false"
+        PageSize="10"
+        PageSizeOptions="@(new[] { 10, 25, 50, 100 })"
+        AllowPaging="true"
+        PagerPosition="PagerPosition.Bottom"
+        ShowPagingSummary="true"
+        IsLoading="@_isLoading"
+        Data="@(_dataSearchResults.Any() ? _dataSearchResults : _data)"
+        Render="@OnRender"
+        Responsive="true"
+        TItem="SaleItemDisplay">
+        <GroupHeaderTemplate>
+            <b class="si-date">@(context.Data.Items.Cast<SaleItemDisplay>().FirstOrDefault()?.SaleDate.ToString("dddd, dd MMM yyyy"))</b>
+        </GroupHeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="saleDay" Title="" Visible="false"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="SaleDate" Title="Date" Width="260px" SortOrder="SortOrder.Descending">
+                <Template Context="item">
+                    @string.Format(new System.Globalization.CultureInfo("en-CA"), "{0:t}", item.SaleDate)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="saleTime" Title="" Visible="false"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="SaleId" Title="ID" Width="102px" FormatString="{0:d}"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Name" Title="Product / SKU">
+                <Template Context="item">
+                    @item.Name<br/><span class="si-sku">@item.Sku</span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="LocationName" Title="Location"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Payment.Name" Title="Payment"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Quantity" Title="Quantity"/>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Discount" Title="Discount / Promo" FormatString="{0:G29}%">
+                <Template Context="item">
+                    @if (item.Discount > 0)
+                    {
+                        @($"{item.Discount:G29}%")
+                    }
+                    else
+                    {
+                        <RadzenIcon Icon="minimize" Style="opacity:50%;transform:translateY(-15%);"></RadzenIcon>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Tax" Title="Tax">
+                <Template Context="item">
+                    @if (item.Tax > 0)
+                    {
+                        @string.Format(new System.Globalization.CultureInfo("en-CA"), "{0:C}", item.Tax)
+                    }
+                    else
+                    {
+                        <RadzenIcon Icon="minimize" Style="opacity:50%;transform:translateY(-15%);"></RadzenIcon>
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SaleItemDisplay" Property="Total" Title="Total">
+                <Template Context="item">
+                    @string.Format(new System.Globalization.CultureInfo("en-CA"), "{0:C}", item.Total)
+                </Template>
+                @*<FooterTemplate>
+                    Total amount: <b>@string.Format(new System.Globalization.CultureInfo("en-CA"), "{0:C}", SaleItems.Sum(i => i.Total))</b>
+                </FooterTemplate>*@
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</div>
+
+@code {
+
+    [CascadingParameter] Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    RadzenDataGrid<SaleItemDisplay>? _grid;
+    
+    IEnumerable<SaleItemDisplay> _data = [];
+
+    RadzenTextBox? _searchTextBox;
+
+    IEnumerable<SaleItemDisplay> _dataSearchResults = [];
+
+    List<Location> _locations = [];
+
+    bool _hasLoadedData;
+    
+    bool _isLoading;
+
+    bool _isSearching;
+
+    DateType _dateTypeInput = DateType.Today;
+    
+    DateTime? _startDateInput = DateTime.Today;
+    
+    DateTime? _endDateInput = DateTime.Today;
+
+    DateTime _endDateInputMin = DateTime.Today;
+
+    List<int> _locationsInput = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                if (!_locations.Any())
+                {
+                    var clients = await Mvpos.Clients.Get(186);
+
+                    if (clients.Client.Locations != null)
+                    {
+                        _locations = clients.Client.Locations.ToList();
+                        _locationsInput = _locations.Select(x => x.Id).ToList();
+                        StateHasChanged();
+
+                        _hasLoadedData = false;
+                        _grid?.Reload();
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                // TODO: Display message showing "error processing request"
+                if (ex.StatusCode != HttpStatusCode.Unauthorized) throw new Exception("There was a problem processing your request.");
+                
+                if (AuthenticationState is not null)
+                {
+                    var authState = await AuthenticationState;
+
+                    try
+                    {
+                        await AuthManager.ReValidateUserAsync(authState.User);
+                        NavigationManager.NavigateTo(NavigationManager.ToBaseRelativePath(NavigationManager.Uri), true, true);
+                        return;
+                    }
+                    catch (Exception retryEx)
+                    {
+                        Logger.LogInformation(retryEx, "Revalidation failed or navigation service threw exception.");
+                        NavigationManager.NavigateTo("/logout");
+                    }
+                }
+                    
+                NavigationManager.NavigateTo("/logout");
+            }
+        }
+    }
+    
+    async void OnRender(DataGridRenderEventArgs<SaleItemDisplay> args)
+    {
+        if (args.FirstRender)
+        {
+            args.Grid.Groups.Add(new GroupDescriptor { Property = "saleDay", Title = "", FormatString = "{0:yyyy/MM/dd}"});
+        }
+
+        if (_isSearching)
+        {
+            _isSearching = false;
+            StateHasChanged();
+            return;
+        }
+        
+        if (!_isLoading && !_hasLoadedData)
+        {
+            _isLoading = true;
+            StateHasChanged();
+            
+            _data = [];
+            _dataSearchResults = [];
+            
+            if (!_locationsInput.Any())
+            {
+                _hasLoadedData = true;
+            }
+            else
+            {
+                try
+                {
+                    foreach (var location in _locationsInput)
+                    {
+                        await Mvpos.Users.SetStoreLocation((Mvpos.StoreLocation)location);
+
+                        if (_startDateInput != null && _endDateInput != null)
+                        {
+                            _data = _data.Concat((await Mvpos.SaleItems.List(_startDateInput.Value, _endDateInput.Value))
+                                .Items
+                                .Select(item => new SaleItemDisplay(item)));
+                        }
+                    }
+
+                    _hasLoadedData = true;
+                }
+                catch (HttpRequestException ex)
+                {
+                    // TODO: Display message showing "error processing request"
+                    if (ex.StatusCode != HttpStatusCode.Unauthorized) throw new Exception("There was a problem processing your request.");
+                
+                    if (AuthenticationState is not null)
+                    {
+                        var authState = await AuthenticationState;
+
+                        try
+                        {
+                            await AuthManager.ReValidateUserAsync(authState.User);
+                            NavigationManager.NavigateTo(NavigationManager.ToBaseRelativePath(NavigationManager.Uri), true, true);
+                            return;
+                        }
+                        catch (Exception retryEx)
+                        {
+                            Logger.LogInformation(retryEx, "Revalidation failed or navigation service threw exception.");
+                            NavigationManager.NavigateTo("/logout");
+                        }
+                    }
+                    
+                    NavigationManager.NavigateTo("/logout");
+                }
+            }
+        }
+
+        if (_isLoading && _hasLoadedData)
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    void OnSearchInput(string? value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            var results = _data.Where(x => x.Sku != null && x.Sku.Contains(value, StringComparison.CurrentCultureIgnoreCase));
+            _dataSearchResults = results.OrderByDescending(x => x.SaleDate);
+        }
+        else
+        {
+            _dataSearchResults = [];
+        }
+
+        _isSearching = true;
+        _grid?.Reload();
+    }
+
+    void OnDateTypeChanged(DateType value)
+    {
+        switch (value)
+        {
+            case DateType.Today:
+                _startDateInput = DateTime.Now;
+                _endDateInput = DateTime.Now;
+                _endDateInputMin = DateTime.Now;
+                break;
+            case DateType.ThisWeek:
+                _startDateInput = DateTime.Now.StartOfWeek();
+                _endDateInput = DateTime.Now.EndOfWeek();
+                _endDateInputMin = DateTime.Now.StartOfWeek();
+                break;
+            case DateType.ThisMonth:
+                _startDateInput = DateTime.Now.StartOfMonth();
+                _endDateInput = DateTime.Now.EndOfMonth();
+                _endDateInputMin = DateTime.Now.StartOfMonth();
+                break;
+            case DateType.CustomRange:
+                // _startDateInput = null;
+                // _endDateInput = null;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(value), value, null);
+        }
+
+        if (_searchTextBox != null) _searchTextBox.Value = null;
+        _isSearching = false;
+        
+        if (_startDateInput != null && _endDateInput != null)
+        {
+            _hasLoadedData = false;
+            _grid?.Reload();
+        }
+        else
+        {
+            _data = [];
+            _dataSearchResults = [];
+            StateHasChanged();
+        }
+    }
+
+    void OnStartDateChanged(DateTime? date)
+    {
+        if (date == null) return;
+
+        _dateTypeInput = DateType.CustomRange;
+        _endDateInputMin = date.Value;
+
+        if (date.Value > _endDateInput)
+        {
+            _endDateInput = date.Value;
+        }
+    }
+
+    void OnEndDateChanged(DateTime? date)
+    {
+        if (date == null || _startDateInput == null) return;
+
+        if (_searchTextBox != null) _searchTextBox.Value = null;
+        _isSearching = false;
+        _hasLoadedData = false;
+        _grid?.Reload();
+    }
+
+    void OnLocationChanged(IEnumerable<int>? ids)
+    {
+        if (ids == null)
+        {
+            _locationsInput = [];
+        }
+
+        if (_searchTextBox != null) _searchTextBox.Value = null;
+        _isSearching = false;
+        _hasLoadedData = false;
+    }
+    
+    class SaleItemDisplay(SaleItem item) : SaleItem(item)
+    {
+        public DateTime SaleDay { get; set; } = new(item.SaleDate.Year, item.SaleDate.Month, item.SaleDate.Day);
+        public TimeOnly SaleTime { get; set; } = new(item.SaleDate.Hour, item.SaleDate.Minute, item.SaleDate.Second);
+    }
+
+    enum DateType
+    {
+        Today,
+        [Display(Description = "This Week")]
+        ThisWeek,
+        [Display(Description = "This Month")]
+        ThisMonth,
+        [Display(Description = "Custom Range")]
+        CustomRange,
+    }
+}

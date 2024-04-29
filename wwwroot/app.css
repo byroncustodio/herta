@@ -1,0 +1,179 @@
+:root {
+    --theme-light: #e6e4f6;
+    /*--theme-dark: #000000;*/
+    
+    --white: #fafafd;
+    --black:  #45444a;
+    
+    --primary: #e4f6ef;
+    --secondary: #f4f6e4;
+    
+    --success: #e4f6e6;
+    /*--danger: #f6e6e4;*/
+    --danger: red;
+    
+    --base-font-family: "Urbanist", sans-serif;
+    --base-font-color: var(--black);
+    --base-font-weight: 500;
+    --base-font-size: 16px;
+    
+    --bs-font-sans-serif: var(--base-font-family);
+    --bs-body-color: var(--base-font-color);
+    --bs-body-font-weight: var(--base-font-weight);
+    --bs-body-font-size: var(--base-font-size);
+    
+    --rz-text-font-family: var(--bs-font-sans-serif);
+    
+    --rz-text-title-color: var(--black);
+    --rz-text-h1-font-weight: var(--bs-body-font-weight);
+
+    --rz-primary: var(--primary);
+    --rz-on-primary: var(--black);
+    --rz-primary-light: #effaf5;
+    
+    --rz-secondary: var(--secondary);
+    
+    --rz-layout-background-color: var(--theme-light);
+    --rz-layout-body-background-color: var(--rz-base-100);
+    
+    --rz-header-background-color: var(--theme-light);
+    --rz-profile-menu-top-item-background-color: var(--theme-light);
+    --rz-profile-menu-toggle-button-color: var(--black);
+    --rz-sidebar-toggle-hover-background-color: #ebe9f8;
+    --rz-sidebar-toggle-hover-color: var(--black);
+    
+    --rz-footer-background-color: initial;
+    
+    --rz-form-field-label-focus-color: var(--black);
+    
+    --rz-input-hover-border: 1px solid #d1cfdd;
+}
+
+html {
+    font-style: normal;
+}
+
+section#planet {
+    overflow: hidden;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+}
+
+section#planet span.star::before {
+    content:'';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 300px;
+    height: 1px;
+    background: linear-gradient(90deg,#fff,transparent);
+}
+
+section#planet span:nth-child(1) {
+    position: absolute;
+    width: 50vh;
+    height: 50vh;
+    bottom: 0;
+    border-radius: 100%;
+    background-color: #FFF2F2;
+    transform: translate(calc(100vw / 2 - 25vh), 100%) scale(2.5);
+    z-index: 1;
+}
+
+section#planet span.star:nth-child(2) {
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.1),0 0 0 8px rgba(255,255,255,0.1),0 0 20px rgba(255,255,255,0.1);
+
+    bottom: 0;
+    animation-name: animate;
+    animation-delay: 0s;
+    animation-duration: 10s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+
+@keyframes animate
+{
+    0%
+    {
+        transform: rotate(270deg) translateX(0);
+        opacity: 1;
+    }
+    70%
+    {
+        opacity: 1;
+    }
+    100%
+    {
+        transform: rotate(360deg) translateX(100vw);
+        opacity: 0;
+    }
+}
+
+#remember-me .rz-chkbox-box.checked {
+    background-color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+#remember-me .rz-chkbox-box.checked span:before {
+    content: "check";
+    font-family: 'Material Icons', serif;
+    color: var(--black);
+}
+
+#login-validation {
+    width: fit-content;
+    margin: 1rem auto auto;
+    color: var(--danger);
+}
+
+.rz-layout:has(.rz-header) {
+    position: relative;
+}
+
+.rz-layout:has(.rz-header) .rz-body {
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    
+    .rz-layout:has(.rz-header) .rz-body {
+        transition: opacity 0.1s linear;
+    }
+    
+    .rz-layout .rz-sidebar {
+        position: absolute;
+        top: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: fit-content;
+        opacity: 1 !important;
+    }
+    
+    .rz-layout .rz-sidebar-expanded {
+        transform: translate(0, 0) !important;
+    }
+
+    .rz-layout .rz-sidebar-collapsed {
+        transform: translate(0, -100%) !important;
+    }
+    
+    .rz-layout:has(.rz-sidebar-expanded) .rz-body {
+        opacity: 0.5;
+    }
+
+    .rz-datepicker.rz-popup {
+        left: 0 !important;
+        right: 0 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+    
+}

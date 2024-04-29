@@ -1,0 +1,125 @@
+﻿@page "/login"
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Net
+
+@inject AuthManager AuthManager
+@inject NavigationManager NavigationManager
+@inject ILogger<Login> Logger
+
+<PageTitle>Sign In</PageTitle>
+<PageScript Src="./Components/Pages/Login.razor.js" />
+
+<EditForm EditContext="_editContext" OnValidSubmit="@Submit" FormName="Login">
+    <RadzenRow AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+        <RadzenColumn Size="12" Style="text-align:center;">
+            @* <RadzenImage Path="content/makers_logo.png" Style="width:24rem;margin-bottom:1rem;"/> *@
+            <RadzenText TextStyle="TextStyle.H1" Text="Herta" Style="font-family:'K2D',sans-serif;"></RadzenText>
+        </RadzenColumn>
+        <RadzenColumn SizeMD="10" SizeXS="12">
+            <RadzenStack Gap="1.5rem">
+                <RadzenFormField Text="Email">
+                    <RadzenTextBox @bind-Value="UserCredentials.Email" Name="UserCredentials.Email" AutoComplete="true" AutoCompleteType="AutoCompleteType.Email" Attributes="@(new Dictionary<string, object> { { "required", "" }, { "type", "email" } })" />
+                </RadzenFormField>
+                <RadzenFormField Text="Password" Component="Password">
+                    <ChildContent>
+                        <RadzenPassword @bind-Value="UserCredentials.Password" Name="UserCredentials.Password" AutoComplete="true" AutoCompleteType="AutoCompleteType.CurrentPassword" Attributes="@(new Dictionary<string, object> { { "required", "" } })"/>
+                    </ChildContent>
+                    <End>
+                        <RadzenButton Icon="visibility_off" Variant="Variant.Text" Size="ButtonSize.Small" id="toggle-password" Style="color: var(--default-font-color);"/>
+                    </End>
+                </RadzenFormField>
+                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenColumn Size="6">
+                        <RadzenCheckBox @bind-Value="UserCredentials.RememberMe" Name="UserCredentials.RememberMe" id="remember-me"/>
+                        <RadzenLabel Text="Remember me" Component="RememberMe" Style="margin-left: 8px; vertical-align: middle;"/>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <ValidationMessage For="() => _accountValidationSummary" id="login-validation"/>
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Text="Sign In"/>
+    </RadzenStack>
+</EditForm>
+
+@code {
+    
+    [CascadingParameter] HttpContext? HttpContext { get; set; }
+    
+    [CascadingParameter] Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    [SupplyParameterFromQuery] string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm] Credentials UserCredentials { get; set; } = new();
+
+    EditContext? _editContext;
+    
+    ValidationMessageStore? _messageStore;
+
+    string _accountValidationSummary = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var user = authState.User;
+            
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+
+        _editContext = new EditContext(UserCredentials);
+        _messageStore = new ValidationMessageStore(_editContext);
+    }
+    
+    async Task Submit()
+    {
+        _messageStore?.Clear();
+        
+        try
+        {
+            await AuthManager.ValidateUserAsync(UserCredentials.Email, UserCredentials.Password);
+            var principal = AuthManager.AuthenticateUser(UserCredentials.Email, UserCredentials.Password);
+
+            var properties = new AuthenticationProperties
+            {
+                IsPersistent = UserCredentials.RememberMe,
+                RedirectUri = "/"
+            };
+
+            if (HttpContext != null) await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _messageStore?.Add(() => _accountValidationSummary, "Failed to login user.");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, ex.Message);
+            _messageStore?.Add(() => _accountValidationSummary, "Request error.");
+            return;
+        }
+        
+        NavigationManager.NavigateTo(ReturnUrl ?? "/");
+    }
+    
+    sealed class Credentials
+    {
+        public string Email { get; set; } = "";
+        
+        public string Password { get; set; } = "";
+        
+        public bool RememberMe { get; set; }
+    }
+
+}

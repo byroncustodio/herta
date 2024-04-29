@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+@using Herta.Components.Shared
+
+@inject NavigationManager NavigationManager
+
+<div>
+    <RadzenLayout>
+        <AuthorizeView>
+            <Authorized>
+                <Menu></Menu>
+                <RadzenBody class="rz-p-sm-4" Style="display: flex;flex-direction: column;justify-content: space-between;">
+                    <div class="rz-p-4">
+                        @Body
+                    </div>
+                    <RadzenFooter>
+                        <Footer></Footer>
+                    </RadzenFooter>
+                </RadzenBody>
+            </Authorized>
+            <NotAuthorized>
+                <RadzenBody Style="margin: auto;transform: translateY(-4rem);z-index: 1;">
+                    @Body
+                </RadzenBody>
+                @*<section id="planet">
+                    <span></span>
+                    <span class="star"></span>
+                </section>*@
+            </NotAuthorized>
+        </AuthorizeView>
+    </RadzenLayout>
+</div>
+
+@code {
+    
+    [CascadingParameter] HttpContext? HttpContext { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (HttpContext is null)
+        {
+            // If this code runs, we're currently rendering in interactive mode, so there is no HttpContext.
+            // The identity pages need to set cookies, so they require an HttpContext. To achieve this we
+            // must transition back from interactive mode to a server-rendered page.
+            NavigationManager.Refresh(forceReload: true);
+        }
+    }
+
+}
