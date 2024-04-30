@@ -9,9 +9,11 @@
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <Company>Herta</Company>
         <Product>Herta</Product>
+        <UserSecretsId>7dbffa66-8a7a-4df9-97cf-8ef34a40a404</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FirebaseAdmin" Version="2.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.0"/>

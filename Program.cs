@@ -1,6 +1,9 @@
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Herta.Components;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using MvposSDK;
+using Newtonsoft.Json;
 using Radzen;
 
 namespace Herta;
@@ -34,6 +37,24 @@ public class Program
         builder.Services.AddScoped<Mvpos>();
 
         builder.Services.AddRadzenComponents();
+
+        FirebaseApp.Create(new AppOptions
+        {
+            Credential = GoogleCredential.FromJson(JsonConvert.SerializeObject(new
+            {
+                type = builder.Configuration["type"],
+                project_id = builder.Configuration["project_id"],
+                private_key_id = builder.Configuration["private_key_id"],
+                private_key = builder.Configuration["private_key"],
+                client_email = builder.Configuration["client_email"],
+                client_id = builder.Configuration["client_id"],
+                auth_uri = builder.Configuration["auth_uri"],
+                token_uri = builder.Configuration["token_uri"],
+                auth_provider_x509_cert_url = builder.Configuration["auth_provider_x509_cert_url"],
+                client_x509_cert_url = builder.Configuration["client_x509_cert_url"],
+                universe_domain = builder.Configuration["universe_domain"]
+            }))
+        });
         
         var app = builder.Build();
 
