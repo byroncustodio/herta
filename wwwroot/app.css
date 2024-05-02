@@ -32,6 +32,7 @@
     --rz-primary-light: #effaf5;
     
     --rz-secondary: var(--secondary);
+    --rz-on-secondary: var(--black);
     
     --rz-layout-background-color: var(--theme-light);
     --rz-layout-body-background-color: var(--rz-base-100);
@@ -115,6 +116,22 @@ section#planet span.star:nth-child(2) {
         transform: rotate(360deg) translateX(100vw);
         opacity: 0;
     }
+}
+
+.rz-body:has(> .rz-card[name="Login"]) {
+    margin: auto;
+}
+
+.rz-stack[name="SignInProviders"] img {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.rz-stack[name="SignInProviders"] .rz-button-text {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.75rem;
+    line-height: 2rem;
 }
 
 #remember-me .rz-chkbox-box.checked {

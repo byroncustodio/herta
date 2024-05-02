@@ -11,39 +11,63 @@
 <PageTitle>Sign In</PageTitle>
 <PageScript Src="./Components/Pages/Login.razor.js" />
 
-<EditForm EditContext="_editContext" OnValidSubmit="@Submit" FormName="Login">
-    <RadzenRow AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
-        <RadzenColumn Size="12" Style="text-align:center;">
-            @* <RadzenImage Path="content/makers_logo.png" Style="width:24rem;margin-bottom:1rem;"/> *@
-            <RadzenText TextStyle="TextStyle.H1" Text="Herta" Style="font-family:'K2D',sans-serif;"></RadzenText>
-        </RadzenColumn>
-        <RadzenColumn SizeMD="10" SizeXS="12">
-            <RadzenStack Gap="1.5rem">
-                <RadzenFormField Text="Email">
-                    <RadzenTextBox @bind-Value="UserCredentials.Email" Name="UserCredentials.Email" AutoComplete="true" AutoCompleteType="AutoCompleteType.Email" Attributes="@(new Dictionary<string, object> { { "required", "" }, { "type", "email" } })" />
-                </RadzenFormField>
-                <RadzenFormField Text="Password" Component="Password">
-                    <ChildContent>
-                        <RadzenPassword @bind-Value="UserCredentials.Password" Name="UserCredentials.Password" AutoComplete="true" AutoCompleteType="AutoCompleteType.CurrentPassword" Attributes="@(new Dictionary<string, object> { { "required", "" } })"/>
-                    </ChildContent>
-                    <End>
-                        <RadzenButton Icon="visibility_off" Variant="Variant.Text" Size="ButtonSize.Small" id="toggle-password" Style="color: var(--default-font-color);"/>
-                    </End>
-                </RadzenFormField>
-                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
-                    <RadzenColumn Size="6">
-                        <RadzenCheckBox @bind-Value="UserCredentials.RememberMe" Name="UserCredentials.RememberMe" id="remember-me"/>
-                        <RadzenLabel Text="Remember me" Component="RememberMe" Style="margin-left: 8px; vertical-align: middle;"/>
-                    </RadzenColumn>
-                </RadzenRow>
+<RadzenCard name="Login">
+    <EditForm EditContext="_editContext" OnValidSubmit="@Submit" FormName="Login">
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
+            <RadzenRow AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenColumn Size="12" Style="text-align:center;">
+                    <RadzenText TextStyle="TextStyle.H1" Text="Herta" Style="font-family:'K2D',sans-serif;"></RadzenText>
+                </RadzenColumn>
+
+                <RadzenColumn SizeMD="10" SizeXS="12">
+                    <RadzenStack Gap="1.5rem">
+                        <RadzenFormField Text="Email">
+                            <RadzenTextBox @bind-Value="UserCredentials.Email" Name="UserCredentials.Email" AutoComplete="true" AutoCompleteType="AutoCompleteType.Email" Attributes="@(new Dictionary<string, object> { { "required", "" }, { "type", "email" } })"/>
+                        </RadzenFormField>
+
+                        <RadzenFormField Text="Password" Component="Password">
+                            <ChildContent>
+                                <RadzenPassword @bind-Value="UserCredentials.Password" Name="UserCredentials.Password" AutoComplete="true" AutoCompleteType="AutoCompleteType.CurrentPassword" Attributes="@(new Dictionary<string, object> { { "required", "" } })"/>
+                            </ChildContent>
+                            <End>
+                                <RadzenButton Icon="visibility_off" Variant="Variant.Text" Size="ButtonSize.Small" id="toggle-password" Style="color: var(--default-font-color);"/>
+                            </End>
+                        </RadzenFormField>
+
+                        <RadzenRow JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                            <RadzenColumn Size="6">
+                                <RadzenCheckBox @bind-Value="UserCredentials.RememberMe" Name="UserCredentials.RememberMe" id="remember-me"/>
+                                <RadzenLabel Text="Remember me" Component="RememberMe" Style="margin-left: 8px; vertical-align: middle;"/>
+                            </RadzenColumn>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <ValidationMessage For="() => _accountValidationSummary" id="login-validation"/>
+
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
+                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Text="Sign In"/>
             </RadzenStack>
-        </RadzenColumn>
-    </RadzenRow>
-    <ValidationMessage For="() => _accountValidationSummary" id="login-validation"/>
-    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
-        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Text="Sign In"/>
-    </RadzenStack>
-</EditForm>
+            
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Style="opacity: 75%;">
+                <RadzenText Text="Sign In With" TextStyle="TextStyle.Body1" Style="background-color: white;padding: 0 1rem;z-index: 1;"></RadzenText>
+                <span style="position: absolute;width: calc(100% - 128px);height: 2px;background-color: var(--black);transform: translateY(12px);opacity: 50%;"></span>
+            </RadzenStack>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" name="SignInProviders" Style="margin-top: 1rem;">
+                <RadzenButton Disabled="true" Image="images/google-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="padding: 6px;"></RadzenButton>
+                <RadzenButton Text="m." ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="font-family: 'DM Serif Display', serif;font-weight: 400;text-transform: lowercase;padding: 6px;"></RadzenButton>
+                <RadzenButton Disabled="true" Image="images/square-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="padding: 6px;"></RadzenButton>
+            </RadzenStack>
+            
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="margin-top: 2rem;">
+                <RadzenText Text="First time here?"></RadzenText>
+                <RadzenLink Target="_self" Path="/" Text="Sign Up" Style="color: #0d6efd;"></RadzenLink>
+            </RadzenStack>
+        </RadzenStack>
+    </EditForm>
+</RadzenCard>
 
 @code {
     
@@ -90,7 +114,7 @@
             var properties = new AuthenticationProperties
             {
                 IsPersistent = UserCredentials.RememberMe,
-                RedirectUri = "/"
+                RedirectUri = "/dashboard"
             };
 
             if (HttpContext != null) await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, properties);
@@ -110,7 +134,7 @@
             return;
         }
         
-        NavigationManager.NavigateTo(ReturnUrl ?? "/");
+        NavigationManager.NavigateTo(ReturnUrl ?? "/dashboard");
     }
     
     sealed class Credentials

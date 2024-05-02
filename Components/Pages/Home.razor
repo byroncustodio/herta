@@ -1,19 +1,20 @@
 ﻿@page "/"
-@page "/dashboard"
 @rendermode InteractiveServer
 
-@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager NavigationManager
 
-@attribute [Authorize]
+<RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center">
+    <RadzenText TextStyle="TextStyle.H1" Text="Herta" Style="margin-bottom: 8rem;font-family:'K2D',sans-serif;"></RadzenText>
+    <RadzenText TextStyle="TextStyle.H2" Text="Simulate Your Business" Style="font-weight: bold;"></RadzenText>
+    <RadzenText TextStyle="TextStyle.H3" Text="Universal Platform to Manage Your Sales Channels" Style="margin-bottom: 4rem;"></RadzenText>
+    <RadzenButton Click="@(args => OnClick())" Text="Get Started" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large"></RadzenButton>
+</RadzenStack>
 
-<PageTitle>Herta</PageTitle>
+@code {
 
-<h1>Dashboard</h1>
-
-Welcome to your new app.
-
-<AuthorizeView Roles="Vendor">
-    <p>@context.User.Identity?.Name</p>
-    <p>@context.User.Identity?.IsAuthenticated</p>
-    <p>@context.User.IsInRole("Vendor")</p>
-</AuthorizeView>
+    private void OnClick()
+    {
+        NavigationManager.NavigateTo("/login");
+    }
+    
+}
