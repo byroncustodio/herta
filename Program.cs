@@ -86,9 +86,6 @@ public class Program
                    .GetManifestResourceStream(config["googleCloud:serviceAccount:credentials"] ??
                                               throw new InvalidOperationException()))
         {
-            Console.WriteLine(Assembly.GetExecutingAssembly().GetManifestResourceNames());
-            Console.WriteLine("stream is null: " + (stream == null));
-            
             using (var reader = new JsonTextReader(new StreamReader(stream ?? throw new InvalidOperationException())))
             {
                 var serializer = new JsonSerializer();
@@ -98,6 +95,9 @@ public class Program
 
         googleServiceAccount.Add("private_key", config["googleCloud:serviceAccount:key"]);
 
+        Console.WriteLine(config["googleCloud:serviceAccount:key"]);
+        Console.WriteLine(googleServiceAccount.ToString());
+        
         using (var fs = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None,
                    4096, FileOptions.Encrypted))
         {
