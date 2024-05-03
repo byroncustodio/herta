@@ -29,35 +29,28 @@ public class Program
         
         builder.Services.AddMvpos();
 
+        SetGoogleAuthentication(config);
+        
         builder.Services.AddSecretManagerServiceClient();
 
         var app = builder.Build();
 
-        SetGoogleAuthentication(app.Environment.IsDevelopment(), config);
-
-        SecretVersionName secretVersionName;
-        
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseMigrationsEndPoint();
-
-            secretVersionName = new SecretVersionName(config["googleCloud:projectId"],
-                config["googleCloud:secrets:firebaseAuth"], "latest");
         }
         else
         {
             app.UseExceptionHandler("/Error");
             // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
-
-            secretVersionName = new SecretVersionName(Environment.GetEnvironmentVariable("googleCloud:projectId"),
-                Environment.GetEnvironmentVariable("googleCloud:secrets:firebaseAuth"), "latest");
         }
 
         var secretManager = app.Services.GetService<SecretManagerServiceClient>();
         
-        var secretResponse = secretManager?.AccessSecretVersion(secretVersionName);
+        var secretResponse = secretManager?.AccessSecretVersion(new SecretVersionName(config["googleCloud:projectId"],
+            config["googleCloud:secrets:firebaseAuth"], "latest"));
 
         if (secretResponse != null)
         {
@@ -85,7 +78,7 @@ public class Program
         app.Run();
     }
 
-    private static void SetGoogleAuthentication(bool isDevelopment, IConfiguration config)
+    private static void SetGoogleAuthentication(IConfiguration config)
     {
         JObject googleServiceAccount;
         
@@ -96,10 +89,7 @@ public class Program
             googleServiceAccount = JObject.FromObject(serializer.Deserialize(reader) ?? throw new InvalidOperationException());
         }
 
-        googleServiceAccount.Add("private_key",
-            isDevelopment
-                ? config["googleCloud:serviceAccount:key"]
-                : Environment.GetEnvironmentVariable("googleCloud:serviceAccount:Key"));
+        googleServiceAccount.Add("private_key", config["googleCloud:serviceAccount:key"]);
 
         using (var fs = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None,
                    4096, FileOptions.Encrypted))
