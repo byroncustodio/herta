@@ -47,7 +47,7 @@
             <ValidationMessage For="() => _accountValidationSummary" id="login-validation"/>
 
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem" Class="rz-mt-8 rz-mb-4">
-                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Text="Sign In"/>
+                <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" ButtonStyle="ButtonStyle.Secondary" Text="Sign In" Style="font-weight: bold;"/>
             </RadzenStack>
             
             <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" Style="opacity: 75%;">
@@ -55,10 +55,10 @@
                 <span style="position: absolute;width: calc(100% - 128px);height: 2px;background-color: var(--black);transform: translateY(12px);opacity: 50%;"></span>
             </RadzenStack>
             
-            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" name="SignInProviders" Style="margin-top: 1rem;">
-                <RadzenButton Disabled="true" Image="images/google-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="padding: 6px;"></RadzenButton>
-                <RadzenButton Text="m." ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="font-family: 'DM Serif Display', serif;font-weight: 400;text-transform: lowercase;padding: 6px;"></RadzenButton>
-                <RadzenButton Disabled="true" Image="images/square-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Large" Style="padding: 6px;"></RadzenButton>
+            <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center" name="SignInProviders" Style="margin-top: 1rem;">
+                <RadzenButton Disabled="false" Text="makers" Image="images/makers-brand-logo.jpg" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Style="background-color: #ece1cd;"></RadzenButton>
+                <RadzenButton Disabled="false" Text="Google" Image="images/google-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Style="background-color: #D2E3FC;"></RadzenButton>
+                <RadzenButton Disabled="false" Text="Square" Image="images/square-brand-logo.png" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" Style="background-color: white;"></RadzenButton>
             </RadzenStack>
             
             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem" Style="margin-top: 2rem;">

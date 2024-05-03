@@ -1,16 +1,16 @@
 :root {
-    --theme-light: #e6e4f6;
+    --theme-light: #f6f6fc;
     /*--theme-dark: #000000;*/
     
     --white: #fafafd;
     --black:  #45444a;
     
-    --primary: #e4f6ef;
-    --secondary: #f4f6e4;
+    --primary: #d4d1f0;
+    --secondary: #edf0d1;
     
-    --success: #e4f6e6;
+    --success: #d1f0d4;
     /*--danger: #f6e6e4;*/
-    --danger: red;
+    --danger: #f0d4d1;
     
     --base-font-family: "Urbanist", sans-serif;
     --base-font-color: var(--black);
@@ -54,72 +54,19 @@ html {
     font-style: normal;
 }
 
-section#planet {
-    overflow: hidden;
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
+.rz-layout:has(.rz-body[not-authorized]) {
+    position: relative;
 }
 
-section#planet span.star::before {
-    content:'';
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 300px;
-    height: 1px;
-    background: linear-gradient(90deg,#fff,transparent);
+.rz-body[not-authorized] {
+    background-color: transparent !important;
+    z-index: 3;
+    transform: translateY(4rem);
 }
 
-section#planet span:nth-child(1) {
-    position: absolute;
-    width: 50vh;
-    height: 50vh;
-    bottom: 0;
-    border-radius: 100%;
-    background-color: #FFF2F2;
-    transform: translate(calc(100vw / 2 - 25vh), 100%) scale(2.5);
-    z-index: 1;
-}
-
-section#planet span.star:nth-child(2) {
-    position: absolute;
-    left: 0;
-    width: 20px;
-    height: 20px;
-    background: #fff;
-    border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(255,255,255,0.1),0 0 0 8px rgba(255,255,255,0.1),0 0 20px rgba(255,255,255,0.1);
-
-    bottom: 0;
-    animation-name: animate;
-    animation-delay: 0s;
-    animation-duration: 10s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-}
-
-@keyframes animate
-{
-    0%
-    {
-        transform: rotate(270deg) translateX(0);
-        opacity: 1;
-    }
-    70%
-    {
-        opacity: 1;
-    }
-    100%
-    {
-        transform: rotate(360deg) translateX(100vw);
-        opacity: 0;
-    }
-}
-
-.rz-body:has(> .rz-card[name="Login"]) {
+.rz-body[not-authorized]:has(.rz-card[name="Login"]) {
     margin: auto;
+    transform: translateY(-4rem);
 }
 
 .rz-stack[name="SignInProviders"] img {
@@ -128,10 +75,13 @@ section#planet span.star:nth-child(2) {
 }
 
 .rz-stack[name="SignInProviders"] .rz-button-text {
-    width: 2.5rem;
+    min-width: 100px;
     height: 2.5rem;
-    font-size: 1.75rem;
-    line-height: 2rem;
+    font-size: 1.25rem;
+    line-height: 2.5rem;
+    padding-left: 1rem;
+    text-transform: initial;
+    text-align: left;
 }
 
 #remember-me .rz-chkbox-box.checked {
@@ -160,7 +110,33 @@ section#planet span.star:nth-child(2) {
 }
 
 @media (max-width: 768px) {
+
+    #sw-js-blob-svg1 {
+        width: 100%;
+        height: 100%;
+        transform: scale(2.5) translate(-3px, -56px) rotate(-2deg);
+    }
+
+    #sw-js-blob-svg2 {
+        width: 100%;
+        height: 100%;
+        transform: scale(2.5) translate(78px, 90px) rotate(8deg);
+    }
+
+    #sw-js-blob-svg3 {
+        width: 100%;
+        height: 100%;
+        transform: scale(2.5) translate(-39px, -10px) rotate(12deg);
+    }
+
+    .rz-body[not-authorized] {
+        transform: unset !important;
+    }
     
+    .rz-body[not-authorized]:not(:has(> .rz-card[name="Login"])) .rz-text-h1 {
+        margin-bottom: 4rem !important;
+    }
+
     .rz-layout:has(.rz-header) .rz-body {
         transition: opacity 0.1s linear;
     }
