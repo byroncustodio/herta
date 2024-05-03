@@ -81,12 +81,19 @@ public class Program
     private static void SetGoogleAuthentication(IConfiguration config)
     {
         JObject googleServiceAccount;
-        
-        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(config["googleCloud:serviceAccount:credentials"] ?? throw new InvalidOperationException()))
-        using (var reader = new JsonTextReader(new StreamReader(stream ?? throw new InvalidOperationException())))
+
+        using (var stream = Assembly.GetExecutingAssembly()
+                   .GetManifestResourceStream(config["googleCloud:serviceAccount:credentials"] ??
+                                              throw new InvalidOperationException()))
         {
-            var serializer = new JsonSerializer();
-            googleServiceAccount = JObject.FromObject(serializer.Deserialize(reader) ?? throw new InvalidOperationException());
+            Console.WriteLine(Assembly.GetExecutingAssembly().GetManifestResourceNames());
+            Console.WriteLine("stream is null: " + (stream == null));
+            
+            using (var reader = new JsonTextReader(new StreamReader(stream ?? throw new InvalidOperationException())))
+            {
+                var serializer = new JsonSerializer();
+                googleServiceAccount = JObject.FromObject(serializer.Deserialize(reader) ?? throw new InvalidOperationException());
+            }
         }
 
         googleServiceAccount.Add("private_key", config["googleCloud:serviceAccount:key"]);
