@@ -62,4 +62,8 @@
       <_ContentIncludedByDefault Remove="Components\Account\Shared\StatusMessage.razor" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Assets\herta-422013-bb903b616403.json" />
+    </ItemGroup>
+
 </Project>

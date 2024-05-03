@@ -1,7 +1,11 @@
+using System.Reflection;
+using System.Text;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.SecretManager.V1;
 using Herta.Components;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Radzen;
 
 namespace Herta;
@@ -29,14 +33,15 @@ public class Program
 
         var app = builder.Build();
 
-        var secretManager = app.Services.GetService<SecretManagerServiceClient>();
+        SetGoogleAuthentication(app.Environment.IsDevelopment(), config);
+
         SecretVersionName secretVersionName;
         
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
             app.UseMigrationsEndPoint();
-            
+
             secretVersionName = new SecretVersionName(config["googleCloud:projectId"],
                 config["googleCloud:secrets:firebaseAuth"], "latest");
         }
@@ -50,6 +55,8 @@ public class Program
                 Environment.GetEnvironmentVariable("googleCloud:secrets:firebaseAuth"), "latest");
         }
 
+        var secretManager = app.Services.GetService<SecretManagerServiceClient>();
+        
         var secretResponse = secretManager?.AccessSecretVersion(secretVersionName);
 
         if (secretResponse != null)
@@ -76,5 +83,31 @@ public class Program
             .AddInteractiveServerRenderMode();
 
         app.Run();
+    }
+
+    private static void SetGoogleAuthentication(bool isDevelopment, IConfiguration config)
+    {
+        JObject googleServiceAccount;
+        
+        using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(config["googleCloud:serviceAccount:credentials"] ?? throw new InvalidOperationException()))
+        using (var reader = new JsonTextReader(new StreamReader(stream ?? throw new InvalidOperationException())))
+        {
+            var serializer = new JsonSerializer();
+            googleServiceAccount = JObject.FromObject(serializer.Deserialize(reader) ?? throw new InvalidOperationException());
+        }
+
+        googleServiceAccount.Add("private_key",
+            isDevelopment
+                ? config["googleCloud:serviceAccount:key"]
+                : Environment.GetEnvironmentVariable("googleCloud:serviceAccount:Key"));
+
+        using (var fs = new FileStream(Path.GetTempFileName(), FileMode.Open, FileAccess.ReadWrite, FileShare.None,
+                   4096, FileOptions.Encrypted))
+        {
+            var data = new UTF8Encoding(true).GetBytes(googleServiceAccount.ToString());
+            fs.Write(data, 0, data.Length);
+            
+            Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", fs.Name);
+        }
     }
 }
